@@ -54,4 +54,5 @@ public class EnemyDirector {
                 .setAIBehavior(factory.createAIBehavior())
                 .build();
     }
+    // Factory Method delegation: Director uses polymorphic build()
 }
