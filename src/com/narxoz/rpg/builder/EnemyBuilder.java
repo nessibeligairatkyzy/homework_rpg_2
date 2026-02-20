@@ -19,7 +19,8 @@ public interface EnemyBuilder {
     EnemyBuilder setAIBehavior(String aiBehavior);
 
 
-    EnemyBuilder addPhase(int phaseNumber, int healthThreshold);
 
+
+    // Factory Method: different builders return different concrete Enemy types
     Enemy build();
 }

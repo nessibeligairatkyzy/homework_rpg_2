@@ -21,8 +21,7 @@ public class BossEnemyBuilder implements EnemyBuilder {
     private LootTable lootTable;
     private String aiBehavior = "AGGRESSIVE";
 
-
-    private Map<Integer, Integer> phases = new HashMap<>();
+    //private Map<Integer, Integer> phases = new HashMap<>();
 
     @Override
     public EnemyBuilder setName(String name) {
@@ -86,11 +85,8 @@ public class BossEnemyBuilder implements EnemyBuilder {
         return this;
     }
 
-    @Override
-    public EnemyBuilder addPhase(int phaseNumber, int healthThreshold) {
-        phases.put(phaseNumber, healthThreshold);
-        return this;
-    }
+
+
 
     @Override
     public Enemy build() {
@@ -100,9 +96,7 @@ public class BossEnemyBuilder implements EnemyBuilder {
         if (health <= 0) {
             throw new IllegalStateException("Health must be positive");
         }
-        if (phases.isEmpty()) {
-            throw new IllegalStateException("Boss must have at least one phase");
-        }
+
 
 
         return new DragonBoss(

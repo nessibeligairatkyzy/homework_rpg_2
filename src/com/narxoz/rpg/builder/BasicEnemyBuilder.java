@@ -82,12 +82,6 @@ public class BasicEnemyBuilder implements EnemyBuilder {
     }
 
     @Override
-    public EnemyBuilder addPhase(int phaseNumber, int healthThreshold) {
-
-        return this;
-    }
-
-    @Override
     public Enemy build() {
         if (name == null || name.isEmpty()) {
             throw new IllegalStateException("Name is required");
