@@ -1,94 +1,104 @@
 package com.narxoz.rpg;
 
 import com.narxoz.rpg.builder.BasicEnemyBuilder;
-import com.narxoz.rpg.builder.EnemyBuilder;
+import com.narxoz.rpg.builder.BossEnemyBuilder;
+import com.narxoz.rpg.builder.EnemyDirector;
 import com.narxoz.rpg.combat.Ability;
 import com.narxoz.rpg.enemy.Enemy;
-import com.narxoz.rpg.enemy.Goblin;
-import com.narxoz.rpg.enemy.DragonBoss;
 import com.narxoz.rpg.factory.EnemyComponentFactory;
 import com.narxoz.rpg.factory.FireComponentFactory;
 import com.narxoz.rpg.factory.IceComponentFactory;
 import com.narxoz.rpg.factory.ShadowComponentFactory;
 import com.narxoz.rpg.loot.LootTable;
+import com.narxoz.rpg.prototype.EnemyRegistry;
 
 import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println("=== RPG Enemy System Demo - All 4 Creational Patterns ===\n");
+        System.out.println("=== RPG Enemy System - 4 Creational Patterns Demo ===\n");
 
 
-        System.out.println("1. Abstract Factory - Creating themed components");
         EnemyComponentFactory fireFactory = new FireComponentFactory();
-        List<Ability> fireAbilities = fireFactory.createAbilities();
-        LootTable fireLoot = fireFactory.createLootTable();
-        String fireAI = fireFactory.createAIBehavior();
-
-        System.out.println("  Fire theme:");
-        System.out.println("    Abilities: " + fireAbilities.stream().map(Ability::getName).toList());
-        System.out.println("    Loot items: " + fireLoot.getItems());
-        System.out.println("    AI: " + fireAI);
-
         EnemyComponentFactory iceFactory = new IceComponentFactory();
-        System.out.println("  Ice theme AI: " + iceFactory.createAIBehavior());
+        EnemyComponentFactory shadowFactory = new ShadowComponentFactory();
 
+
+        System.out.println("1. Abstract Factory - themed components");
+        System.out.println("  Fire: " + fireFactory.createAbilities().stream().map(Ability::getName).toList()
+                + " | Loot: " + fireFactory.createLootTable().getItems()
+                + " | AI: " + fireFactory.createAIBehavior());
+        System.out.println("  Ice:  " + iceFactory.createAbilities().stream().map(Ability::getName).toList()
+                + " | Loot: " + iceFactory.createLootTable().getItems()
+                + " | AI: " + iceFactory.createAIBehavior());
         System.out.println();
 
 
-        System.out.println("2. Builder Pattern - Creating enemy with fluent interface");
-        EnemyBuilder builder = new BasicEnemyBuilder();
+        System.out.println("2. Builder Pattern - fluent construction");
+        Enemy basicGoblin = new BasicEnemyBuilder()
+                .setName("Basic Goblin")
+                .setHealth(100)
+                .setDamage(15)
+                .setDefense(5)
+                .setSpeed(10)
+                .setElement("NONE")
+                .setAbilities(fireFactory.createAbilities())
+                .setLootTable(fireFactory.createLootTable())
+                .setAIBehavior("NEUTRAL")
+                .build();
 
-        Enemy fireGoblin = builder
-                .setName("Elite Fire Goblin")
-                .setHealth(200)
-                .setDamage(35)
-                .setDefense(12)
-                .setSpeed(18)
+        System.out.println("  Basic: " + basicGoblin.displayInfo());
+
+        Enemy raidBoss = new BossEnemyBuilder()
+                .setName("Fire Raid Boss")
+                .setHealth(20000)
+                .setDamage(500)
+                .setDefense(200)
+                .setSpeed(70)
                 .setElement("FIRE")
                 .setAbilities(fireFactory.createAbilities())
                 .setLootTable(fireFactory.createLootTable())
                 .setAIBehavior(fireFactory.createAIBehavior())
                 .build();
 
-        System.out.println("  Created: " + fireGoblin.displayInfo());
-
+        System.out.println("  Boss:  " + raidBoss.displayInfo());
         System.out.println();
 
 
-        System.out.println("3. Prototype Pattern - Cloning enemies");
-        Enemy originalGoblin = fireGoblin;
-        System.out.println("  Original: " + originalGoblin.displayInfo());
+        System.out.println("3. Director - preset enemy creation");
+        EnemyDirector director = new EnemyDirector(new BasicEnemyBuilder());
 
+        Enemy minion = director.createMinion(iceFactory);
+        System.out.println("  Minion (Ice): " + minion.displayInfo());
 
-        Enemy cloneGoblin = originalGoblin.clone();
-        System.out.println("  Clone:    " + cloneGoblin.displayInfo());
+        Enemy elite = director.createElite(shadowFactory);
+        System.out.println("  Elite (Shadow): " + elite.displayInfo());
 
-
-        System.out.println("  Clone is different object: " + (originalGoblin != cloneGoblin));
+        Enemy raid = director.createRaidBoss(fireFactory);
+        System.out.println("  Raid Boss (Fire): " + raid.displayInfo());
         System.out.println();
 
 
-        System.out.println("4. DragonBoss example");
-        DragonBoss dragon = new DragonBoss(
-                "Ancient Fire Dragon",
-                10000, 800, 300, 50,
-                "FIRE",
-                fireFactory.createAbilities(),
-                fireFactory.createLootTable(),
-                fireFactory.createAIBehavior()
-        );
+        System.out.println("4. Prototype & Registry - cloning from templates");
+        EnemyRegistry registry = new EnemyRegistry();
 
-        System.out.println("  Original Dragon: " + dragon.displayInfo());
+        registry.registerTemplate("ice_minion", minion);
+        registry.registerTemplate("shadow_elite", elite);
+        registry.registerTemplate("fire_raid_boss", raid);
 
-        Enemy dragonClone = dragon.clone();
-        System.out.println("  Cloned Dragon:   " + dragonClone.displayInfo());
+        registry.listTemplates();
 
-        System.out.println("\n=== Demo finished ===");
-        System.out.println("Patterns demonstrated:");
-        System.out.println(" - Abstract Factory: themed components (abilities + loot + AI)");
-        System.out.println(" - Builder: fluent construction of enemies");
-        System.out.println(" - Prototype: deep cloning of enemies");
-        System.out.println(" - Factory Method: hidden in builder.build()");
+        Enemy clonedMinion = registry.createFromTemplate("ice_minion");
+        System.out.println("  Cloned Minion: " + clonedMinion.displayInfo());
+
+        Enemy clonedRaid = registry.createFromTemplate("fire_raid_boss");
+        System.out.println("  Cloned Raid Boss: " + clonedRaid.displayInfo());
+
+        System.out.println("\n=== Demo complete ===");
+        System.out.println("Patterns shown:");
+        System.out.println(" - Abstract Factory: themed parts");
+        System.out.println(" - Builder: step-by-step creation");
+        System.out.println(" - Factory Method: in build()");
+        System.out.println(" - Prototype: cloning via registry");
     }
 }
