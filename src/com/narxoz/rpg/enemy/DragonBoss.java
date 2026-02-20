@@ -6,6 +6,7 @@ import com.narxoz.rpg.loot.LootTable;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class DragonBoss implements Enemy {
     private String name;
     private int health;
@@ -17,6 +18,7 @@ public class DragonBoss implements Enemy {
     private List<Ability> abilities = new ArrayList<>();
     private LootTable lootTable;
     private String aiBehavior;
+
 
     public DragonBoss() {
     }
